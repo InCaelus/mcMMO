@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
@@ -22,7 +23,7 @@ public class MiningListener implements Listener {
         this.playerManager = pm;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player p = event.getPlayer();
         ItemStack tool = p.getInventory().getItemInMainHand();
@@ -50,6 +51,7 @@ public class MiningListener implements Listener {
                         if (x == 0 && y == 0 && z == 0) continue;
                         Block relative = block.getRelative(x, y, z);
                         if (isMineable(relative.getType())) {
+
                             relative.breakNaturally(tool);
                         }
                     }
@@ -57,14 +59,14 @@ public class MiningListener implements Listener {
             }
         }
 
-        boolean hasSilkTouch = tool.containsEnchantment(Enchantment.SILK_TOUCH);
+        if (tool.containsEnchantment(Enchantment.SILK_TOUCH)) return;
 
-        if (!hasSilkTouch && Math.random() < (level * 0.01)) {
+        if (Math.random() < (level * 0.01)) {
 
             Collection<ItemStack> drops = block.getDrops(tool);
-            for (ItemStack drop : drops) {
 
-                if (!drop.getType().isBlock() || mat.name().contains("ORE")) {
+            for (ItemStack drop : drops) {
+                if (!drop.getType().isBlock()) {
                     block.getWorld().dropItemNaturally(block.getLocation(), drop);
                 }
             }
